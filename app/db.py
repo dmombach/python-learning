@@ -1,3 +1,7 @@
+# This simulates a databaser connection
+
+db = {"contacts": []}
+
+
 def get_db():
-    # This simulates a databaser connection
-    return {"contacts": []}
+    return db
