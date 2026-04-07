@@ -1,0 +1,46 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE settings
+.vscode/
+.idea/
+
+# Environment variables
+.env
+.env.*
+
+# Byte-compiled / optimized / DLL files
+*.so
+*.dll
+*.dylib
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log
+
+# Coverage / testing
+htmlcov/
+.coverage
+.coverage.*
+.cache
+pytest_cache/
+
+# MyPy / Pyright / Pylance
+.mypy_cache/
+.pytest_cache/
+.pyright/
+
+# FastAPI / Uvicorn
+*.sqlite
