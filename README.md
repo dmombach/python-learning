@@ -1,3 +1,6 @@
+![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.12-blue?style=for-the-badge&logo=python&logoColor=white)
+
 # FastAPI Learning Project
 
 A hands-on project exploring modern Python backend development using **FastAPI**, **Pydantic v2**, and clean architecture principles. 
