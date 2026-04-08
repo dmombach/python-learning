@@ -1,10 +1,19 @@
-def add_contact(db, contact):
-    db["contacts"].append(contact)
+from sqlmodel import select
+from app.models import Contact
 
 
-def find_contact(db, name):
-    return next((c for c in db["contacts"] if c["name"] == name), None)
+def create_contact(session, contact_data):
+    contact = Contact(**contact_data.model_dump())
+    session.add(contact)
+    session.commit()
+    session.refresh(contact)
+    return contact
 
 
-def list_contacts(db):
-    return db["contacts"]
+def get_all_contacts(session):
+    return session.exec(select(Contact)).all()
+
+
+def get_contact_by_name(session, name: str):
+    statement = select(Contact).where(Contact.name == name)
+    return session.exec(statement).first()

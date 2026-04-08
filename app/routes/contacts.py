@@ -1,34 +1,28 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-from pydantic import BaseModel
-from app.contacts import add_contact, list_contacts, search_contact
-from app.db import get_db
-from app.services.contact_service import add_contact, find_contact, list_contacts
+from sqlmodel import Session
+from app.db import get_session
+from app.schemas import ContactCreate, ContactRead
+from app.services import contact_service
 
-router = APIRouter()
-
-
-class Contact(BaseModel):
-    name: str
-    phone: str
+router = APIRouter(prefix="/contacts")
 
 
-@router.post("/contacts", status_code=status.HTTP_201_CREATED)
-def create_contact(contact: Contact, db=Depends(get_db)):
-    if any(c["name"] == contact.name for c in db["contacts"]):
-        raise HTTPException(status_code=400, detail="Contact already exists.")
-
-    db["contacts"].append(contact.model_dump())
-    return {"message": "Contact added."}
-
-
-@router.get("/contacts")
-def get_contacts(db=Depends(get_db)):
-    return db["contacts"]
+@router.post("/", response_model=ContactRead, status_code=status.HTTP_201_CREATED)
+def create_contact(contact: ContactCreate, session: Session = Depends(get_session)):
+    existing = contact_service.get_contact_by_name(session, contact.name)
+    if existing:
+        raise HTTPException(status_code=400, detail="Contact name already exists.")
+    return contact_service.create_contact(session, contact)
 
 
-@router.get("/contacts/{name}")
-def get_contact(name: str, db=Depends(get_db)):
-    for c in db["contacts"]:
-        if c["name"] == name:
-            return c
-    raise HTTPException(status_code=404, detail="Contact not found.")
+@router.get("/", response_model=list[ContactRead])
+def list_contacts(session: Session = Depends(get_session)):
+    return contact_service.get_all_contacts(session)
+
+
+@router.get("/{name}", response_model=ContactRead)
+def get_contact(name: str, session: Session = Depends(get_session)):
+    contact = contact_service.get_contact_by_name(session, name)
+    if not contact:
+        raise HTTPException(status_code=404, detail="Contact name not found.")
+    return contact
