@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="FastAPI.png" width="180" alt="Project Logo">
+  <img src="FastAPI.png" width="300" alt="Project Logo">
 </p>
 
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white)
