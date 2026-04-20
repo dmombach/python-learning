@@ -13,3 +13,13 @@ class ContactCreate(ContactBase):
 
 class ContactRead(ContactBase):
     id: int
+
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
+
+
+class UserRead(BaseModel):
+    id: int
+    username: str

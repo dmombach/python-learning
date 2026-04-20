@@ -3,8 +3,14 @@ from sqlmodel import Session
 from app.db import get_session
 from app.schemas import ContactCreate, ContactRead
 from app.services import contact_service
+from app.auth import get_current_user
 
 router = APIRouter(prefix="/contacts")
+
+
+@router.get("/me")
+def read_me(current_user=Depends(get_current_user)):
+    return {"username": current_user.username}
 
 
 @router.post("/", response_model=ContactRead, status_code=status.HTTP_201_CREATED)
