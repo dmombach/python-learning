@@ -8,7 +8,7 @@ from app.services import user_service
 from typing import Optional
 
 SECRET_KEY = "super-secret-key-change-this"
-ALGORITHM = "H256"
+ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
