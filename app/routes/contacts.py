@@ -14,25 +14,33 @@ def read_me(current_user=Depends(get_current_user)):
 
 
 @router.post("/", response_model=ContactRead, status_code=status.HTTP_201_CREATED)
-def create_contact(contact: ContactCreate, session: Session = Depends(get_session)):
+def create_contact(
+    contact: ContactCreate,
+    session: Session = Depends(get_session),
+    current_user=Depends(get_current_user),
+):
     existing = contact_service.get_contact_by_name(session, contact.name)
     if existing:
         raise HTTPException(status_code=400, detail="Contact name already exists.")
 
-    return contact_service.create_contact(session, contact)
+    return contact_service.create_contact(session, contact, current_user.id)
 
 
 @router.get("/", response_model=list[ContactRead])
-def list_contacts(session: Session = Depends(get_session)):
-    return contact_service.get_all_contacts(session)
+def list_contacts(
+    session: Session = Depends(get_session), current_user=Depends(get_current_user)
+):
+    return contact_service.get_contacts_by_owner(session, current_user.id)
 
 
 @router.get("/{name}", response_model=ContactRead)
 def get_contact(
-    name: str = Path(..., example="Dan M"), session: Session = Depends(get_session)
+    name: str = Path(..., example="Dan M"),
+    session: Session = Depends(get_session),
+    current_user=Depends(get_current_user),
 ):
     contact = contact_service.get_contact_by_name(session, name)
-    if not contact:
+    if not contact or contact.owner_id != current_user.id:
         raise HTTPException(status_code=404, detail="Contact name not found.")
 
     return contact
@@ -43,9 +51,10 @@ def update_contact(
     contact: ContactCreate,
     name: str = Path(..., example="Dan M"),
     session: Session = Depends(get_session),
+    current_user=Depends(get_current_user),
 ):
     existing = contact_service.update_contact(session, name, contact)
-    if not existing:
+    if not existing or existing.owner_id != current_user.id:
         raise HTTPException(status_code=404, detail="Contact not found.")
 
     return existing
@@ -53,10 +62,12 @@ def update_contact(
 
 @router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_contact(
-    name: str = Path(..., example="Dan M"), session: Session = Depends(get_session)
+    name: str = Path(..., example="Dan M"),
+    session: Session = Depends(get_session),
+    current_user=Depends(get_current_user),
 ):
     contact = contact_service.get_contact_by_name(session, name)
-    if not contact:
+    if not contact or contact.owner_id != current_user.id:
         raise HTTPException(status_code=404, detail="Contact not found.")
 
     session.delete(contact)

@@ -7,6 +7,7 @@ class Contact(SQLModel, table=True):
     name: str
     email: str
     phone: str
+    owner_id: int = Field(foreign_key="user.id")
 
 
 class User(SQLModel, table=True):
