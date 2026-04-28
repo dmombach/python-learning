@@ -23,3 +23,8 @@ class UserCreate(BaseModel):
 class UserRead(BaseModel):
     id: int
     username: str
+
+
+class ContactListResponse(BaseModel):
+    total: int
+    items: list[ContactRead]
