@@ -4,6 +4,7 @@ from app.db import get_session
 from app.schemas import ContactCreate, ContactRead, ContactListResponse
 from app.services import contact_service
 from app.auth import get_current_user
+from app.models import ContactUpdate
 
 router = APIRouter(prefix="/contacts")
 
@@ -90,3 +91,18 @@ def delete_contact(
 
     session.delete(contact)
     session.commit()
+
+
+@router.patch("/{contact_id}", response_model=ContactRead)
+def update_contact(
+    contact_id: int,
+    contact_update: ContactUpdate,
+    session: Session = Depends(get_session),
+    current_user=Depends(get_current_user),
+):
+    return contact_service.update_contact(
+        session=session,
+        owner_id=current_user.id,
+        contact_id=contact_id,
+        contact_update=contact_update,
+    )

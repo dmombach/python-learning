@@ -1,7 +1,9 @@
 from sqlmodel import select
-from app.models import Contact
+from app.models import Contact, ContactUpdate
 from app.schemas import ContactCreate
 from sqlalchemy import or_, asc, desc, func
+from fastapi import HTTPException, status
+from datetime import datetime, timezone
 
 
 def create_contact(session, contact_data: ContactCreate, owner_id: int):
@@ -32,9 +34,33 @@ def update_contact(session, name, data):
 
     for key, value in data.model_dump().items():
         setattr(contact, key, value)
+    contact.updated_at = datetime.now(timezone.utc)
+
     session.add(contact)
     session.commit()
     session.refresh(contact)
+    return contact
+
+
+def update_contact(
+    session, owner_id: int, contact_id: int, contact_update: ContactUpdate
+):
+    contact = session.get(Contact, contact_id)
+    if not contact or contact.owner_id != contact_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found."
+        )
+
+    update_data = contact_update.model_dump(exclude_unset=True)
+
+    for field, value in update_data.items():
+        setattr(contact, field, value)
+    contact.updated_at = datetime.utcnow()
+
+    session.add(contact)
+    session.commit()
+    session.refresh(contact)
+
     return contact
 
 
