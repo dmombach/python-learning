@@ -1,4 +1,3 @@
-from app.services import bootstrap_contacts
 from app.contacts import remove_contact, search_contact, list_contacts
 from app.utils import safe_int, safe_get_contact
 
@@ -67,9 +66,6 @@ from app.utils import safe_int, safe_get_contact
 
 # endregion
 
-# Add some contacts
-bootstrap_contacts()
-
 # List contacts
 for c in list_contacts():
     print(f"{c['name']} - {c['phone']}")
@@ -110,7 +106,10 @@ except ValueError:
 
 try:
     result = search_contact("Bob")
-    print(result["phone"])
+    if result is None:
+        print("Contact not found.")
+    else:
+        print(result.phone)
 except TypeError:
     print("Contact not found.")
 

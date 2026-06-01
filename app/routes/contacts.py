@@ -66,41 +66,38 @@ def get_contact(
 
 
 @router.put("/{name}", response_model=ContactRead)
-def update_contact(
+def update_contact_by_name_route(
     contact: ContactCreate,
     name: str = Path(..., example="Dan M"),
     session: Session = Depends(get_session),
     current_user=Depends(get_current_user),
 ):
-    existing = contact_service.update_contact(session, name, contact)
+    existing = contact_service.update_contact_by_name(session, name, contact)
     if not existing or existing.owner_id != current_user.id:
         raise HTTPException(status_code=404, detail="Contact not found.")
 
     return existing
 
 
-@router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_contact(
-    name: str = Path(..., example="Dan M"),
+@router.delete("/{contact_id}")
+def delete_contact_route(
+    contact_id: int,
     session: Session = Depends(get_session),
     current_user=Depends(get_current_user),
 ):
-    contact = contact_service.get_contact_by_name(session, name)
-    if not contact or contact.owner_id != current_user.id:
-        raise HTTPException(status_code=404, detail="Contact not found.")
-
-    session.delete(contact)
-    session.commit()
+    return contact_service.delete_contact(
+        session=session, owner_id=current_user.id, contact_id=contact_id
+    )
 
 
 @router.patch("/{contact_id}", response_model=ContactRead)
-def update_contact(
+def update_contact_partial(
     contact_id: int,
     contact_update: ContactUpdate,
     session: Session = Depends(get_session),
     current_user=Depends(get_current_user),
 ):
-    return contact_service.update_contact(
+    return contact_service.update_contact_by_id(
         session=session,
         owner_id=current_user.id,
         contact_id=contact_id,

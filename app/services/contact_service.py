@@ -1,7 +1,7 @@
 from sqlmodel import select
 from app.models import Contact, ContactUpdate
 from app.schemas import ContactCreate
-from sqlalchemy import or_, asc, desc, func
+from sqlalchemy import or_, asc, desc, func, cast, String
 from fastapi import HTTPException, status
 from datetime import datetime, timezone
 
@@ -27,7 +27,7 @@ def get_contacts_by_owner(session, owner_id: int):
     return session.query(Contact).filter(Contact.owner_id == owner_id).all()
 
 
-def update_contact(session, name, data):
+def update_contact_by_name(session, name, data):
     contact = get_contact_by_name(session, name)
     if not contact:
         return None
@@ -42,7 +42,7 @@ def update_contact(session, name, data):
     return contact
 
 
-def update_contact(
+def update_contact_by_id(
     session, owner_id: int, contact_id: int, contact_update: ContactUpdate
 ):
     contact = session.get(Contact, contact_id)
@@ -55,7 +55,7 @@ def update_contact(
 
     for field, value in update_data.items():
         setattr(contact, field, value)
-    contact.updated_at = datetime.utcnow()
+    contact.updated_at = datetime.now(timezone.utc)
 
     session.add(contact)
     session.commit()
@@ -80,11 +80,11 @@ def search_contacts(
     conditions = []
 
     if name:
-        conditions.append(Contact.name.contains(name))
+        conditions.append(cast(Contact.name, String).contains(name))
     if email:
-        conditions.append(Contact.email.contains(email))
+        conditions.append(cast(Contact.email, String).contains(email))
     if phone:
-        conditions.append(Contact.phone.contains(phone))
+        conditions.append(cast(Contact.phone, String).contains(phone))
 
     if conditions:
         query = base.where(or_(*conditions))
@@ -108,3 +108,17 @@ def search_contacts(
     items = session.exec(query).all()
 
     return {"total": total, "items": items}
+
+
+def delete_contact(session, owner_id: int, contact_id: int):
+    contact = session.get(Contact, contact_id)
+
+    if not contact or contact.owner_id != owner_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found"
+        )
+
+    session.delete(contact)
+    session.commit()
+
+    return {"message": "Contact deleted successfully."}
